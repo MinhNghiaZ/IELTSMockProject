@@ -93,7 +93,7 @@ function AdminCourse() {
 
       {/* Filter and Search */}
       <div className="row mb-3">
-        <div className="col-md-8">
+        {/* <div className="col-md-8">
           <div className="mb-3">
             <div className="dropdown">
               <a href="#" className="dropdown-toggle text-gray-6 btn rounded border d-inline-flex align-items-center" data-bs-toggle="dropdown" aria-expanded="false">
@@ -105,7 +105,7 @@ function AdminCourse() {
               </ul>
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="col-md-4">
           <div className="input-icon mb-3">
             <span className="input-icon-addon">

@@ -37,7 +37,11 @@ function TestList() {
           search: searchTerm || undefined,
           sort: sortBy || undefined,
         });
-        setTests(data);
+
+        const activeTests = data.filter(test => {
+          return test.isActive === true;
+        })
+        setTests(activeTests);
         
         // Reset to first page when filters change
         setCurrentPage(1);
