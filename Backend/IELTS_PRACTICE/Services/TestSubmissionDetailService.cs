@@ -2,6 +2,7 @@
 using IELTS_PRACTICE.DTOs.Responses;
 using IELTS_PRACTICE.DTOs.Resquests;
 using IELTS_PRACTICE.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace IELTS_PRACTICE.Services
 {
@@ -15,7 +16,7 @@ namespace IELTS_PRACTICE.Services
 
         public async Task<List<TestSubmissionDetailDTO>> GetAllTestSubmissionDetail()
         {
-            return _context.TestSubmissionDetails
+            return await _context.TestSubmissionDetails
                 .Select(x => new TestSubmissionDetailDTO
                 {
                     Id = x.Id,
@@ -23,12 +24,12 @@ namespace IELTS_PRACTICE.Services
                     Feedback = x.Feedback,
                     Answer = x.Answer,
                 })
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task<TestSubmissionDetailDTO> GetTestSubmissionDetailById(int id)
         {
-            return _context.TestSubmissionDetails
+            return await _context.TestSubmissionDetails
                 //.Where(x => x.Id == id)
                 .Where(x => x.SubmissionId == id)
                 .Select(x => new TestSubmissionDetailDTO
@@ -37,7 +38,7 @@ namespace IELTS_PRACTICE.Services
                     SubmissionId = x.SubmissionId,
                     Feedback = x.Feedback,
                     Answer = x.Answer,
-                }).FirstOrDefault();
+                }).FirstOrDefaultAsync();
         }
 
         public async Task<TestSubmissionDetailDTO> CreateTestSubmissionDetail(CreateTestSubmissionDetailDTO rq)

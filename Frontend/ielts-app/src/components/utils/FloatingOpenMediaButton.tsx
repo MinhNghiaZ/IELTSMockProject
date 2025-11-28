@@ -20,7 +20,7 @@ function FloatingOpenMediaButton() {
                     right: '2rem',
                     width: '60px',
                     height: '60px',
-                    zIndex: 1000,
+                    zIndex: 3000,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'

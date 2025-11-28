@@ -92,14 +92,14 @@ namespace IELTS_PRACTICE.Services
 
         public async Task<int> GetQuestionCountInTestId(int id)
         {
-            return _context.Questions
-                .Where(x => x.TestId == id && x.ParentId != 0).Count();
+            return await _context.Questions
+                .Where(x => x.TestId == id && x.ParentId != 0).CountAsync();
         }
 
 
         public async Task<List<QuestionFullDetailDTO>> getAllQuestionsAndParagraphByTestId(int id)
         {
-            return _context.Questions
+            return await _context.Questions
                 .Where(x => x.TestId == id)
                 .Select(x => new QuestionFullDetailDTO
                 {
@@ -113,7 +113,7 @@ namespace IELTS_PRACTICE.Services
                     ParentId = x.ParentId,
                     Order = x.Order,
                     Link = x.Link,
-                }).ToList();
+                }).ToListAsync();
         }
 
         public async Task<QuestionFullDetailDTO> CreateQuestion(CreateQuestionDTO rq) {
@@ -132,7 +132,7 @@ namespace IELTS_PRACTICE.Services
                     Order = rq.Order,
                 };
                 _context.Questions.Add(content);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
                 return new QuestionFullDetailDTO
                 {
                     Id = content.Id,
@@ -156,7 +156,7 @@ namespace IELTS_PRACTICE.Services
                 Order = rq.Order,
             };
             _context.Questions.Add(question);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return new QuestionFullDetailDTO
             {
                 Id = question.Id,
@@ -212,7 +212,7 @@ namespace IELTS_PRACTICE.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<(bool Success, string Message, int ImportedCount)> UploadQuestionByExcelFile(IFormFile formFile) {
+        public async Task<(bool Success, string Message, int ImportedCount)> UploadQuestionByExcelFile(IFormFile formFile, int testId, string testType) {
             //validation
             if (formFile == null || formFile.Length == 0)
             {
@@ -231,6 +231,8 @@ namespace IELTS_PRACTICE.Services
             try
             {
                 var questions = new List<Question>();
+                var contents = new List<Question>();
+                var parentIdMap = new Dictionary<int, int>();
                 using var memoryStream = new MemoryStream();
                 await formFile.CopyToAsync(memoryStream);
                 using (var excelPackage = new ExcelPackage(memoryStream)) 
@@ -251,7 +253,45 @@ namespace IELTS_PRACTICE.Services
                         return (false, "Excel file must contain at least one data row", 0);
                     }
 
-                    for (int row = 2; row <= rowCount; row++)
+                    int begin = 0;
+                    if (testType.ToLower().Equals("reading"))
+                    {
+                        begin = 5;
+                    }
+                    else if(testType.ToLower().Equals("listening")) {
+                        begin = 6;
+                    }
+
+                    //xu ly content
+                    for (int row = 2; row < begin; row++) {
+                        string GetCellValue(int col) => workSheet.Cells[row, col].Value?.ToString()?.Trim() ?? string.Empty;
+                        int GetIntCellValue(int col) => int.TryParse(GetCellValue(col), out int result) ? result : 0;
+                        var currentContent = new Question
+                        {
+                            QuestionType = GetCellValue(1),
+                            Content = GetCellValue(2),
+                            CorrectAnswer = "",
+                            Choices = "",
+                            Explanation = "",
+                            Link = "",
+                            ParentId = 0,
+                            TestId = testId,
+                            Order = GetIntCellValue(9) //1 | 2 | 3 specify sequence of paragraph
+                        };
+                        contents.Add(currentContent);
+                    }
+                    await _context.Questions.AddRangeAsync(contents);
+                    await _context.SaveChangesAsync();
+                    //cho vao hashmap de biet Thu tu va ID cua paragraph
+                    //pp1 : 10
+                    //pp2 : 12
+                    //pp3 : 13
+                    foreach(var content in contents) {
+                        parentIdMap.Add(content.Order, content.Id);
+                    }
+
+                    //bth neu khong co paragraph/audio row = 2
+                    for (int row = begin; row <= rowCount; row++)
                     {
                         // Helper function to safely get string value from cell
                         string GetCellValue(int col) => workSheet.Cells[row, col].Value?.ToString()?.Trim() ?? string.Empty;
@@ -266,8 +306,8 @@ namespace IELTS_PRACTICE.Services
                             CorrectAnswer = GetCellValue(3),
                             Choices = GetCellValue(4),
                             Explanation = GetCellValue(5),
-                            ParentId = GetIntCellValue(6),
-                            TestId = GetIntCellValue(7),
+                            ParentId = parentIdMap[GetIntCellValue(6)],
+                            TestId = testId,
                             Link = GetCellValue(8),
                             Order = GetIntCellValue(9)
                         };

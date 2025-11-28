@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Question, QuestionToUpdate } from '../../../types/Question';
 import { toast } from 'react-toastify';
 import { updateQuestion } from '../../../services/questionService';
+import { Editor } from "@tinymce/tinymce-react";
 
 interface MatchingUpdateModalProps {
     isOpen: boolean;
@@ -122,7 +123,7 @@ function MatchingUpdateModal({
                             <label htmlFor="listOfOptions" className="form-label fw-bold">
                                 List of Options
                             </label>
-                            <textarea
+                            {/* <textarea
                                 className="form-control"
                                 id="listOfOptions"
                                 rows={6}
@@ -132,7 +133,36 @@ function MatchingUpdateModal({
                                     setHasChanges(true);
                                 }}
                                 placeholder="Paste or type your list of options here:&#10;A. Option 1&#10;B. Option 2&#10;i. Option 1&#10;ii. Option 2"
-                            ></textarea>
+                            ></textarea> */}
+                            <Editor
+                                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                licenseKey='gpl'
+                                value={listOfOptions}
+                                onEditorChange={(content: string) => {
+                                    setListOfOptions(content);
+                                    setHasChanges(true);
+                                }}
+                                init={{
+                                height: 300,
+                                menubar: false,
+                                plugins: [
+                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'hr'
+                                ],
+                                toolbar: 'undo redo | blocks | ' +
+                                    'bold italic underline strikethrough | forecolor backcolor | ' +
+                                    'alignleft aligncenter alignright alignjustify | ' +
+                                    'bullist numlist outdent indent | ' +
+                                    'hr | removeformat | table | link image | help',
+                                placeholder: `Paste or type your list of options here:
+                                    A. Option 1
+                                    B. Option 2
+                                    i. Option 1
+                                    ii. Option 2`,
+                                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                                }}
+                            />
                             <small className="form-text text-muted">
                                 Paste your list of options here. Each option should be on a new line.
                             </small>
@@ -143,7 +173,7 @@ function MatchingUpdateModal({
                             <label htmlFor="questionContent" className="form-label fw-bold">
                                 Question Content
                             </label>
-                            <textarea
+                            {/* <textarea
                                 className="form-control"
                                 id="questionContent"
                                 rows={3}
@@ -153,7 +183,32 @@ function MatchingUpdateModal({
                                     setHasChanges(true);
                                 }}
                                 placeholder="Match this statement with the correct option:"
-                            ></textarea>
+                            ></textarea> */}
+                            <Editor
+                                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                licenseKey='gpl'
+                                value={questionContent}
+                                onEditorChange={(content: string) => {
+                                    setQuestionContent(content);
+                                    setHasChanges(true);
+                                }}
+                                init={{
+                                height: 300,
+                                menubar: false,
+                                plugins: [
+                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'hr'
+                                ],
+                                toolbar: 'undo redo | blocks | ' +
+                                    'bold italic underline strikethrough | forecolor backcolor | ' +
+                                    'alignleft aligncenter alignright alignjustify | ' +
+                                    'bullist numlist outdent indent | ' +
+                                    'hr | removeformat | table | link image | help',
+                                placeholder: 'Match this statement with the correct option:',
+                                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                                }}
+                            />
                             <small className="form-text text-muted">
                                 Enter the matching instruction
                             </small>

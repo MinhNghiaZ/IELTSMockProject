@@ -75,7 +75,9 @@ function CourseTable({ tests, onTestsChange }: CourseTableProps) {
           <td>{formatDate(test.createdAt)}</td>
           <td>{test.resource}</td>
           <td>
-            <span className="badge badge-sm bg-success d-inline-flex align-items-center me-1">
+            <span className="badge badge-sm d-inline-flex align-items-center me-1"
+              style={{ backgroundColor: test.isActive ? "#03C95A" : "#ff0000 " }}
+            >
               {/* <i className="fa-solid fa-circle fs-5 me-1"></i>{row.status} */}
               {test.isActive ? "Active" : "Inactive"}
             </span>

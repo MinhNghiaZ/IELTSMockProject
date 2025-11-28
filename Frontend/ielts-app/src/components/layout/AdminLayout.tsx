@@ -7,7 +7,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { createTest } from '../../services/testService';
 import type { TestToCreate } from '../../types/Test';
 import { getUserId } from '../../services/authService';
-import { createParagraph } from '../../services/questionService';
+import { createParagraph, uploadQuestionsFromFile } from '../../services/questionService';
+import { uploadFile } from '../../services/fileUploadService';
 
 function AdminDashboardLayout() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,6 +63,7 @@ function AdminDashboardLayout() {
         testName: string;
         testTypeId: number;
         typeName: string;
+        selectedFile?: File | null;
     }
 
     const handleCreateTest = async (testData: TestData): Promise<void> => {
@@ -93,8 +95,8 @@ function AdminDashboardLayout() {
                 }
             );
 
-            // Step 2: Create initial paragraphs if it's a Reading test (typeId === 1)
-            if (created && created.id ) {
+            // Step 2: Create initial paragraphs only if NO file is selected
+            if (created && created.id && !testData.selectedFile) {
                 console.log("Created test:", created);
                 await toast.promise(
                     createInitialSections(created.id, testData.typeName as 'Reading' | 'Listening'),
@@ -104,6 +106,18 @@ function AdminDashboardLayout() {
                         error: 'Failed to create initial sections'
                     }
                 );
+            } else if (created && created.id && testData.selectedFile) {
+                console.log("File uploaded, skipping initial sections creation");
+                // TODO: Handle file upload to backend here if needed
+                // await uploadTestFile(created.id, testData.selectedFile);
+                await uploadQuestionsFromFile(created.id, testData.selectedFile, testData.typeName).then(() => {
+                    toast.success("Questions uploaded successfully from file!");
+                    testData.selectedFile = null;
+                }).catch((error) => {
+                    console.log(created.id, testData.selectedFile, testData.typeName);
+                    console.error("Error uploading questions from file:", error);
+                    toast.error("Failed to upload questions from file.");
+                });
             }
 
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Question, QuestionToUpdate } from '../../../types/Question';
 import { toast } from 'react-toastify';
 import { updateQuestion } from '../../../services/questionService';
+import { Editor } from "@tinymce/tinymce-react";
 
 interface ShortAnswerUpdateModalProps {
     isOpen: boolean;
@@ -133,7 +134,7 @@ function ShortAnswerUpdateModal({
                                 Question Content
                                 <span className="text-danger">*</span>
                             </label>
-                            <textarea
+                            {/* <textarea
                                 id="questionContent"
                                 className="form-control"
                                 rows={4}
@@ -141,6 +142,31 @@ function ShortAnswerUpdateModal({
                                 value={questionContent}
                                 onChange={(e) => setQuestionContent(e.target.value)}
                                 disabled={isSubmitting}
+                            /> */}
+                            <Editor
+                                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                licenseKey='gpl'
+                                value={questionContent}
+                                onEditorChange={(content: string) => {
+                                    setQuestionContent(content);
+                                }}
+                                disabled={isSubmitting}
+                                init={{
+                                height: 200,
+                                menubar: false,
+                                plugins: [
+                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'hr'
+                                ],
+                                toolbar: 'undo redo | blocks | ' +
+                                    'bold italic underline strikethrough | forecolor backcolor | ' +
+                                    'alignleft aligncenter alignright alignjustify | ' +
+                                    'bullist numlist outdent indent | ' +
+                                    'hr | removeformat | table | link image | help',
+                                placeholder: 'Why was World War I happened?',
+                                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                                }}
                             />
                             <div className="form-text">
                                 Write a clear question that requires a short written response.

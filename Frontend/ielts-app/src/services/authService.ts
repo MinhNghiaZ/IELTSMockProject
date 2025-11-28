@@ -1,5 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import type { UserCreateDTO } from "./userService";
 
 const API_BASE = import.meta.env.VITE_API_BASE as string;
 
@@ -37,6 +38,13 @@ export async function login(
   credentials: LoginRequestDTO
 ): Promise<AuthResponseDTO> {
   const response = await client.post("Auth/login", credentials);
+  return response.data;
+}
+
+export async function registerNewUser(
+  newUser: UserCreateDTO
+): Promise<boolean> {
+  const response = await client.post("Auth/register", newUser);
   return response.data;
 }
 

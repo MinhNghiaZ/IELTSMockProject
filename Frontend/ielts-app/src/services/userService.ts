@@ -1,7 +1,7 @@
 import type { User } from "../types/User";
 import { client } from "./authService"; // Use the authenticated client
 
-interface UserCreateDTO {
+export interface UserCreateDTO {
   fullName: string;
   email: string;
   password: string;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Question, QuestionToUpdate } from '../../../types/Question';
 import { toast } from 'react-toastify';
 import { updateQuestion } from '../../../services/questionService';
+import { Editor } from "@tinymce/tinymce-react";
 
 interface FillInTheBlankUpdateModalProps {
     isOpen: boolean;
@@ -34,15 +35,15 @@ function FillInTheBlankUpdateModal({
 
     // Validation function
     const validateForm = () => {
-        if (!questionContent.trim()) {
-            toast.error('Question content is required');
-            return false;
-        }
+        // if (!questionContent.trim()) {
+        //     toast.error('Question content is required');
+        //     return false;
+        // }
 
-        if (!questionContent.includes('_')) {
-            toast.error('Question content must contain at least one blank (underscore) to indicate where users should fill in answers');
-            return false;
-        }
+        // if (!questionContent.includes('_')) {
+        //     toast.error('Question content must contain at least one blank (underscore) to indicate where users should fill in answers');
+        //     return false;
+        // }
 
         if (!correctAnswer.trim()) {
             toast.error('Correct answer is required');
@@ -120,7 +121,7 @@ function FillInTheBlankUpdateModal({
                             <label htmlFor="questionContent" className="form-label fw-bold">
                                 Question Content
                             </label>
-                            <textarea
+                            {/* <textarea
                                 className="form-control"
                                 id="questionContent"
                                 rows={3}
@@ -130,7 +131,32 @@ function FillInTheBlankUpdateModal({
                                     setHasChanges(true);
                                 }}
                                 placeholder="The capital of France is _______"
-                            ></textarea>
+                            ></textarea> */}
+                            <Editor
+                                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                licenseKey='gpl'
+                                value={questionContent}
+                                onEditorChange={(content: string) => {
+                                    setQuestionContent(content);
+                                    setHasChanges(true);
+                                }}
+                                init={{
+                                height: 300,
+                                menubar: false,
+                                plugins: [
+                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'hr'
+                                ],
+                                toolbar: 'undo redo | blocks | ' +
+                                    'bold italic underline strikethrough | forecolor backcolor | ' +
+                                    'alignleft aligncenter alignright alignjustify | ' +
+                                    'bullist numlist outdent indent | ' +
+                                    'hr | removeformat | table | link image | help',
+                                placeholder: 'The capital of France is _______',
+                                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                                }}
+                            />
                             <small className="form-text text-muted">
                                 Tip: Use underscores (___) to mark where students should type their answers
                             </small>

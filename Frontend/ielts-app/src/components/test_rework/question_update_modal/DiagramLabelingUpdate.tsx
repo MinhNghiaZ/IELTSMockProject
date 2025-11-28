@@ -3,6 +3,7 @@ import type { Question, QuestionToUpdate } from '../../../types/Question';
 import { toast } from 'react-toastify';
 import { updateQuestion } from '../../../services/questionService';
 import { uploadFile } from "../../../services/fileUploadService";
+import { Editor } from "@tinymce/tinymce-react";
 
 interface DiagramLabelingUpdateModalProps {
     isOpen: boolean;
@@ -353,14 +354,36 @@ function DiagramLabelingUpdateModal({
                             <label htmlFor="questionContent" className="form-label fw-bold">
                                 Question Content
                             </label>
-                            <textarea
+                            {/* <textarea
                                 className="form-control"
                                 id="questionContent"
                                 rows={3}
                                 value={questionContent}
                                 onChange={(e) => handleQuestionContentChange(e.target.value)}
                                 placeholder="Enter instructions for the diagram labeling task..."
-                            ></textarea>
+                            ></textarea> */}
+                            <Editor
+                                tinymceScriptSrc="/tinymce/tinymce.min.js"
+                                licenseKey='gpl'
+                                value={questionContent}
+                                onEditorChange={(content: string) => handleQuestionContentChange(content)}
+                                init={{
+                                height: 300,
+                                menubar: false,
+                                plugins: [
+                                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'hr'
+                                ],
+                                toolbar: 'undo redo | blocks | ' +
+                                    'bold italic underline strikethrough | forecolor backcolor | ' +
+                                    'alignleft aligncenter alignright alignjustify | ' +
+                                    'bullist numlist outdent indent | ' +
+                                    'hr | removeformat | table | link image | help',
+                                placeholder: 'Enter instructions for the diagram labeling task...',
+                                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+                                }}
+                            />
                         </div>
 
                         {/* Correct Answer Section */}

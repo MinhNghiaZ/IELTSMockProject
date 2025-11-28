@@ -93,9 +93,9 @@ namespace IELTS_PRACTICE.Controllers
 
         [HttpPost("upload-excel")]
         [RequestSizeLimit(10 * 1024 * 1024)]
-        public async Task<IActionResult> UploadQuestionExcel(IFormFile file)
+        public async Task<IActionResult> UploadQuestionExcel(IFormFile file, int testId, string testType)
         {
-            var (success, message, importedCount) = await _questionService.UploadQuestionByExcelFile(file);
+            var (success, message, importedCount) = await _questionService.UploadQuestionByExcelFile(file, testId, testType);
 
             if (!success)
             {

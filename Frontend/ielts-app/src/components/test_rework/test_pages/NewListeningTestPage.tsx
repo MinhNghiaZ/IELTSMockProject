@@ -714,9 +714,9 @@ function NewListeningTestPage() {
             </span>
             <div className="flex-grow-1">
               {question.content.includes('<') ? (
-                <div className="mb-3"><strong>{parse(DOMPurify.sanitize(question.content))}</strong></div>
+                <div className="mb-3">{parse(DOMPurify.sanitize(question.content))}</div>
               ) : (
-                <p className="mb-3"><strong>{question.content}</strong></p>
+                <p className="mb-3">{question.content}</p>
               )}
               {choices.map((choice: string, index: number) => {
                 const choiceValue = choice.trim();
@@ -789,9 +789,9 @@ function NewListeningTestPage() {
             </span>
             <div className="flex-grow-1">
               {question.content.includes('<') ? (
-                <div className="mb-3"><strong>{parse(DOMPurify.sanitize(question.content))}</strong></div>
+                <div className="mb-3">{parse(DOMPurify.sanitize(question.content))}</div>
               ) : (
-                <p className="mb-3"><strong>{question.content}</strong></p>
+                <p className="mb-3">{question.content}</p>
               )}
               <input
                 type="text"
@@ -809,6 +809,13 @@ function NewListeningTestPage() {
 
   return (
     <>
+    <style>{`
+      .form-control:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        outline: 0 !important;
+      }
+    `}</style>
     <div className="container-fluid py-4 px-3 px-lg-4">
       {/* Loading State */}
       {loading && (

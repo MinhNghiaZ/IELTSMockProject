@@ -487,7 +487,7 @@ function ReadingPage() {
 
     return (
       <div className="question-content">
-        <p className="question-text">{question.content}</p>
+        <p className="question-text">{parse(DOMPurify.sanitize(question.content))}</p>
         {question.link && (
           <div className="audio-player mb-3">
             <audio controls>
@@ -532,7 +532,7 @@ function ReadingPage() {
 
     return (
       <div className="question-content">
-        <p className="question-text">{question.content}</p>
+        <p className="question-text">{parse(DOMPurify.sanitize(question.content))}</p>
         {question.link && (
           <div className="audio-player mb-3">
             <audio controls>
@@ -559,7 +559,7 @@ function ReadingPage() {
                 className="form-check-label"
                 htmlFor={`question-${question.id}-choice-${index}`}
               >
-                {choice}
+                {parse(DOMPurify.sanitize(choice))}
               </label>
             </div>
           ))}
@@ -574,7 +574,7 @@ function ReadingPage() {
   ) => {
     return (
       <div className="question-content">
-        <p className="question-text">{question.content}</p>
+        <p className="question-text">{parse(DOMPurify.sanitize(question.content))}</p>
         {question.link && (
           <div className="audio-player mb-3">
             <audio controls>
@@ -606,7 +606,7 @@ function ReadingPage() {
 
     return (
       <div className="question-content">
-        <p className="question-text">{question.content}</p>
+        <p className="question-text">{parse(DOMPurify.sanitize(question.content))}</p>
         {question.link && (
           <div className="audio-player mb-3">
             <audio controls>
@@ -619,7 +619,7 @@ function ReadingPage() {
           <h6>Options:</h6>
           {choices.map((choice, index) => (
             <div key={index} className="choice-item">
-              {choice}
+              {parse(DOMPurify.sanitize(choice))}
             </div>
           ))}
         </div>
@@ -644,7 +644,7 @@ function ReadingPage() {
   ) => {
     return (
       <div className="question-content">
-        <p className="question-text">{question.content}</p>
+        <p className="question-text">{parse(DOMPurify.sanitize(question.content))}</p>
 
         {/* Display diagram image if link exists */}
         {question.link && (

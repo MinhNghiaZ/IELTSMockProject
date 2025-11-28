@@ -7,7 +7,8 @@ import 'react-toastify/dist/ReactToastify.css'
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import 'swiper/swiper-bundle.css';
-import { AuthProvider } from './contexts/AuthContext.tsx'
+import { AuthProvider } from './contexts/AuthContext.tsx';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 createRoot(document.getElementById('root')!).render(
   // <StrictMode>

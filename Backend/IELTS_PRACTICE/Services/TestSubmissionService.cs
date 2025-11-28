@@ -15,7 +15,7 @@ namespace IELTS_PRACTICE.Services
         }
 
         public async Task<List<TestSubmissionDTO>> GetAllTestSubmission() { 
-            return _context.TestSubmissions
+            return await _context.TestSubmissions
                 .Select(x => new TestSubmissionDTO { 
                     Id = x.Id,
                     UserId = x.UserId,
@@ -23,12 +23,12 @@ namespace IELTS_PRACTICE.Services
                     SubmittedAt = DateTime.UtcNow,
                     Score = x.Score,
                 })
-                .ToList();
+                .ToListAsync();
         }
 
         public async Task<TestSubmissionDTO> GetTestSubmissionById(int id)
         {
-            return _context.TestSubmissions
+            return await _context.TestSubmissions
                 .Where(x => x.Id == id)
                 .Select(x => new TestSubmissionDTO
                 {
@@ -37,7 +37,7 @@ namespace IELTS_PRACTICE.Services
                     TestId = x.TestId,
                     SubmittedAt = DateTime.UtcNow,
                     Score = x.Score,
-                }).FirstOrDefault();
+                }).FirstOrDefaultAsync();
         }
 
         public async Task<TestSubmissionDTO> CreateTestSubmission(CreateTestSubmissionDTO rq) {
@@ -70,7 +70,7 @@ namespace IELTS_PRACTICE.Services
         //this for student site
         public async Task<List<ViewSubmissionDTO>> ViewRecentlySubmission(int id)
         {
-            var result = (from u in _context.Users
+            var result = await (from u in _context.Users
                           where u.Id == id
                           join ts in _context.TestSubmissions on u.Id equals ts.UserId
                           join t in _context.Tests on ts.TestId equals t.Id
@@ -85,7 +85,7 @@ namespace IELTS_PRACTICE.Services
                               SubmittedAt = ts.SubmittedAt,
                           })
                           .OrderByDescending(x => x.SubmittedAt)
-                          .ToList();
+                          .ToListAsync();
 
             return result;
         }

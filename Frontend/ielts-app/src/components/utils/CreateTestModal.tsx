@@ -12,12 +12,15 @@ interface TestData {
     testName: string;
     testTypeId: number;
     typeName: string;
+    selectedFile?: File | null;
 }
 
 function CreateTestModal({ isOpen, onClose, onConfirm }: CreateTestModalProps) {
     const [testName, setTestName] = useState('');
     const [testTypeId, setTestTypeId] = useState(1);
     const [errors, setErrors] = useState<{ testName?: string }>({});
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [fileName, setFileName] = useState("");
 
     const [typeSkills, setTypeSkills] = useState<TypeSkillBasicDto[]>([]);
 
@@ -41,20 +44,33 @@ function CreateTestModal({ isOpen, onClose, onConfirm }: CreateTestModalProps) {
         onConfirm({
             testName: testName.trim(),
             testTypeId,
-            typeName: typeSkills.find(ts => ts.id === testTypeId)?.typeName || ''
+            typeName: typeSkills.find(ts => ts.id === testTypeId)?.typeName || '',
+            selectedFile
         });
 
         // Reset form
         setTestName('');
         setTestTypeId(1);
         setErrors({});
+        setSelectedFile(null);
+        setFileName('');
     };
 
     const handleCancel = () => {
         setTestName('');
         setTestTypeId(1);
         setErrors({});
+        setSelectedFile(null);
+        setFileName('');
         onClose();
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            setFileName(file.name);
+        }
     };
 
     const fetchData = async () => {
@@ -133,6 +149,25 @@ function CreateTestModal({ isOpen, onClose, onConfirm }: CreateTestModalProps) {
                                         </option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div className="mb-3">
+                                <label htmlFor="testType" className="form-label">
+                                    Upload
+                                </label>
+                                <div className="mb-3">
+                            <input
+                                type="file"
+                                className="form-control"
+                                onChange={handleFileSelect}
+                                accept=".pdf,.doc,.docx,.xlsx"
+                            />
+                            {fileName && (
+                                <small className="text-success d-block mt-2">
+                                    Selected: {fileName}
+                                </small>
+                            )}
+                        </div>
                             </div>
                         </div>
 

@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 import { deleteQuestion } from "../../../services/questionService";
 import type { Question } from "../../../types/Question";
 import { confirmToast } from "../../layout/confirmToast";
+import parse from 'html-react-parser';
+import DOMPurify from 'dompurify';
 
 interface QuestionDisplayProps {
     question: Question;
@@ -138,9 +140,13 @@ function QuestionDisplay({ question, questionNumber, onEdit, onDelete, showActio
                                 <h6 className="mb-2 fw-semibold">
                                     Question Content:
                                 </h6>
-                                <p className="mb-2 text-dark">
-                                    {truncateText(question.content, 150)}
-                                </p>
+                                <div className="mb-2 fst-normal">
+                                    {question.content && question.content.includes('<') ? (
+                                        <div>{parse(DOMPurify.sanitize(truncateText(question.content, 150)))}</div>
+                                    ) : (
+                                        <p className="mb-0">{truncateText(question.content, 150)}</p>
+                                    )}
+                                </div>
 
                                 {/* Image Preview (if link is an image) */}
                                 {question.link && isImageUrl(question.link) && (
