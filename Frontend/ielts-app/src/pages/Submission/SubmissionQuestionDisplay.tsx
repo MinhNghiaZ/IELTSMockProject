@@ -45,28 +45,24 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
         return badgeClasses[type] || "bg-dark";
     };
 
-    // Parse choices if they exist (assuming JSON format)
+    // Parse choices if they exist
     const parseChoices = (choices: string): string[] => {
         if (!choices) return [];
-        try {
-            return JSON.parse(choices);
-        } catch {
-            // If not JSON, try splitting by common delimiters
-            return choices.split(/[,|;]/).map(choice => choice.trim()).filter(Boolean);
+
+        if (question.questionType === "Matching") {
+            return choices.split("\n").filter(choice => choice.trim() !== "");
+        }else {
+            return choices.split("|").filter(choice => choice.trim() !== "");
         }
     };
 
     // Check if a URL is an image
     const isImageUrl = (url: string): boolean => {
         if (!url) return false;
-        
+
         // Check for common image extensions
         const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i;
         if (imageExtensions.test(url)) return true;
-        
-        // Check for Discord CDN URLs
-        if (url.includes('cdn.discordapp.com') && url.includes('attachments')) return true;
-        
         return false;
     };
 
@@ -80,21 +76,22 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
     // Check if user's answer is correct
     const isCorrect = (): boolean => {
         if (!question.answer || !question.correctAnswer) return false;
-        
+
         // Normalize user's answer
         const userAnswer = question.answer.trim().toLowerCase();
-        
+
         // Split correct answers by | delimiter
         const correctAnswers = question.correctAnswer
             .split('|')
             .map(ans => ans.trim().toLowerCase())
             .filter(ans => ans.length > 0);
-        
+
         // Check if user's answer matches any of the correct answers
         return correctAnswers.includes(userAnswer);
     };
 
-    const choices = parseChoices(question.choices);
+    const choices = parseChoices(question.choices || "");
+
     const userAnswerIsCorrect = isCorrect();
 
     return (
@@ -103,7 +100,7 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
                 <div className="row align-items-start">
                     {/* Question Number */}
                     <div className="col-auto">
-                        <div 
+                        <div
                             className={`${userAnswerIsCorrect ? 'bg-success' : 'bg-danger'} text-white rounded-circle d-flex align-items-center justify-content-center`}
                             style={{ width: "40px", height: "40px", fontSize: "14px", fontWeight: "bold" }}
                         >
@@ -133,7 +130,6 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
 
                         {/* Question Content */}
                         <h6 className="mb-3 fw-semibold text-dark">
-                            {/* {question.content} */}
                             {parse(DOMPurify.sanitize(question.content))}
                         </h6>
 
@@ -150,8 +146,8 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
                                             src={`${question.link}?v=${Date.now()}`}
                                             alt="Question diagram"
                                             className="img-fluid rounded"
-                                            style={{ 
-                                                maxHeight: "300px", 
+                                            style={{
+                                                maxHeight: "300px",
                                                 maxWidth: "100%",
                                                 objectFit: "contain"
                                             }}
@@ -183,35 +179,45 @@ function SubmissionQuestionDisplay({ question, questionNumber }: SubmissionQuest
 
                         {/* Choices Display (if available) */}
                         {choices.length > 0 && (
-                            <div className="mb-3">
-                                <small className="text-muted fw-semibold d-block mb-2">Choices:</small>
-                                <div className="list-group">
-                                    {choices.map((choice, index) => {
-                                        const choiceLetter = String.fromCharCode(65 + index);
-                                        const isUserChoice = question.answer === choice || question.answer === choiceLetter;
-                                        const isCorrectChoice = question.correctAnswer === choice || question.correctAnswer === choiceLetter;
-
-                                        return (
-                                            <div 
-                                                key={index} 
-                                                className={`list-group-item d-flex align-items-start ${
-                                                    isCorrectChoice ? 'list-group-item-success' : 
-                                                    isUserChoice ? 'list-group-item-danger' : ''
-                                                }`}
-                                            >
-                                                <span className="fw-bold me-2">{choiceLetter}.</span>
-                                                <span className="flex-grow-1">{choice}</span>
-                                                {isCorrectChoice && (
-                                                    <i className="bi bi-check-circle-fill text-success ms-2"></i>
-                                                )}
-                                                {isUserChoice && !isCorrectChoice && (
-                                                    <i className="bi bi-x-circle-fill text-danger ms-2"></i>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                            // render matching type choices cuz it's special
+                            question.questionType === "Matching" ? (
+                                <div className="mb-3">
+                                    <h6>Options:</h6>
+                                    {choices.map((choice, index) => (
+                                        <div key={index} className="choice-item">
+                                            {parse(DOMPurify.sanitize(choice))}
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
+                            ) : ( // render other type choices
+                                <div className="mb-3">
+                                    <small className="text-muted fw-semibold d-block mb-2">Choices:</small>
+                                    <div className="list-group">
+                                        {choices.map((choice, index) => {
+                                            const choiceLetter = String.fromCharCode(65 + index);
+                                            const isUserChoice = question.answer === choice || question.answer === choiceLetter;
+                                            const isCorrectChoice = question.correctAnswer === choice || question.correctAnswer === choiceLetter;
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className={`list-group-item d-flex align-items-start ${isCorrectChoice ? 'list-group-item-success' :
+                                                        isUserChoice ? 'list-group-item-danger' : ''
+                                                        }`}
+                                                >
+                                                    <span className="fw-bold me-2">{choiceLetter}.</span>
+                                                    <span className="flex-grow-1">{choice}</span>
+                                                    {isCorrectChoice && (
+                                                        <i className="bi bi-check-circle-fill text-success ms-2"></i>
+                                                    )}
+                                                    {isUserChoice && !isCorrectChoice && (
+                                                        <i className="bi bi-x-circle-fill text-danger ms-2"></i>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>)
                         )}
 
                         {/* User Answer and Correct Answer */}
