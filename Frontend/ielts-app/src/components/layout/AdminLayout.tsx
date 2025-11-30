@@ -8,7 +8,6 @@ import { createTest } from '../../services/testService';
 import type { TestToCreate } from '../../types/Test';
 import { getUserId } from '../../services/authService';
 import { createParagraph, uploadQuestionsFromFile } from '../../services/questionService';
-import { uploadFile } from '../../services/fileUploadService';
 
 function AdminDashboardLayout() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -270,6 +269,16 @@ function AdminDashboardLayout() {
                                             }
                                         >
                                             <i className="isax isax-image5 me-2"></i>Media
+                                        </NavLink>
+                                    </li>
+                                    <li>
+                                        <NavLink
+                                            to="/admin/support-chat"
+                                            className={({ isActive }) =>
+                                                `d-inline-flex align-items-center ${isActive ? 'active' : ''}`
+                                            }
+                                        >
+                                            <i className="isax isax-messages-3 me-2"></i>Support Chat
                                         </NavLink>
                                     </li>
                                     {/* <li>

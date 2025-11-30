@@ -71,6 +71,16 @@ function StudentLayout() {
                                             <i className="fa-solid fa-user me-2"></i>My Profile
                                         </NavLink>
                                     </li>
+                                    <li>
+                                        <NavLink
+                                            to="/student/support"
+                                            className={({ isActive }) =>
+                                                `d-inline-flex align-items-center ${isActive ? 'active' : ''}`
+                                            }
+                                        >
+                                            <i className="isax isax-messages-3 me-2"></i>Support
+                                        </NavLink>
+                                    </li>
                                     {/* <li>
                                         <NavLink
                                             to="/student/courses"

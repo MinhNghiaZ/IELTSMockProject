@@ -82,6 +82,7 @@ namespace IELTS_PRACTICE
             builder.Services.AddScoped<JwtService>();
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddScoped<MediaService>();
+            builder.Services.AddScoped<SupportChatService>();
 
             // CORS for browser to call API
             builder.Services.AddCors(options =>

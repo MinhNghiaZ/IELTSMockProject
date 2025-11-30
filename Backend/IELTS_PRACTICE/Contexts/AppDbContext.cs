@@ -17,6 +17,7 @@ namespace IELTS_PRACTICE.Contexts
         public DbSet<TypeSkill> TypeSkills { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Media> Media { get; set; }
+        public DbSet<SupportChat> SupportChats { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure schema and lowercase table names to match existing database
@@ -28,6 +29,7 @@ namespace IELTS_PRACTICE.Contexts
             modelBuilder.Entity<TypeSkill>().ToTable("typeskills", "ieltsapp");
             modelBuilder.Entity<User>().ToTable("users", "ieltsapp");
             modelBuilder.Entity<Media>().ToTable("media", "ieltsapp");
+            modelBuilder.Entity<SupportChat>().ToTable("supportchats", "ieltsapp");
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.TestSubmissions)
@@ -63,6 +65,18 @@ namespace IELTS_PRACTICE.Contexts
                 .HasOne(ts => ts.TestSubmissionDetail)
                 .WithOne(tsd => tsd.TestSubmission)
                 .HasForeignKey<TestSubmissionDetail>(tsd => tsd.SubmissionId);
+
+            modelBuilder.Entity<SupportChat>()
+                .HasOne(sc => sc.Student)
+                .WithMany()
+                .HasForeignKey(sc => sc.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SupportChat>()
+                .HasOne(sc => sc.Admin)
+                .WithMany()
+                .HasForeignKey(sc => sc.AdminId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -33,6 +33,8 @@ import TestEditChoser from "./components/test_rework/TestEditChoser";
 import SubmissionDetailPage from "./pages/Submission/SubmissionDetailPage";
 import ErrorPage from "./pages/ErrorPage";
 import MediaList from "./components/admin/MediaList";
+import AdminSupportChat from "./pages/AdminSupportChat";
+import SupportChat from "./pages/SupportChat";
 
 
 const router = createBrowserRouter([
@@ -125,6 +127,10 @@ const router = createBrowserRouter([
           {
             path: "media",
             element: <MediaList />,
+          },
+          {
+            path: "support-chat",
+            element: <AdminSupportChat />,
           }
         ],
       },
@@ -160,6 +166,10 @@ const router = createBrowserRouter([
           {
             path: "settings",
             element: <Settings />,
+          },
+          {
+            path: "support",
+            element: <SupportChat />,
           },
         ],
       },
