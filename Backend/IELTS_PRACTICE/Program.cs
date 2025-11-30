@@ -69,8 +69,7 @@ namespace IELTS_PRACTICE
             });
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Register services
             builder.Services.AddScoped<UserService>();

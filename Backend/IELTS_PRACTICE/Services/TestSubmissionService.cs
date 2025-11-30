@@ -218,7 +218,7 @@ namespace IELTS_PRACTICE.Services
                     .Select(x => x.CorrectAnswer)
                     .FirstOrDefault();
 
-                if (correctAnswer.ToLower() == userAnswer.ToLower())
+                if (correctAnswer != null && correctAnswer.ToLower() == userAnswer.ToLower())
                 {
                     countCorrect++;
                 }

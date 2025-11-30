@@ -19,6 +19,16 @@ namespace IELTS_PRACTICE.Contexts
         public DbSet<Media> Media { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configure schema and lowercase table names to match existing database
+            modelBuilder.Entity<Question>().ToTable("questions", "ieltsapp");
+            modelBuilder.Entity<StudentMetaData>().ToTable("studentmetadatas", "ieltsapp");
+            modelBuilder.Entity<Test>().ToTable("tests", "ieltsapp");
+            modelBuilder.Entity<TestSubmission>().ToTable("testsubmissions", "ieltsapp");
+            modelBuilder.Entity<TestSubmissionDetail>().ToTable("testsubmissiondetails", "ieltsapp");
+            modelBuilder.Entity<TypeSkill>().ToTable("typeskills", "ieltsapp");
+            modelBuilder.Entity<User>().ToTable("users", "ieltsapp");
+            modelBuilder.Entity<Media>().ToTable("media", "ieltsapp");
+
             modelBuilder.Entity<User>()
                 .HasMany(u => u.TestSubmissions)
                 .WithOne(ts => ts.User)
