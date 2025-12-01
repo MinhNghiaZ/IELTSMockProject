@@ -7,6 +7,7 @@ import {
   replyToStudent, 
   getUnreadCount 
 } from '../services/supportChatService';
+import { createSignalRConnection, startConnection, stopConnection } from '../services/signalRService';
 import type { ChatMessage, ChatConversation } from '../services/supportChatService';
 
 export default function AdminSupportChat() {
@@ -16,19 +17,53 @@ export default function AdminSupportChat() {
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
-  const previousMessageCountRef = useRef(0);
+  const hubConnectionRef = useRef<any>(null);
 
   useEffect(() => {
     loadConversations();
     loadUnreadCount();
     
-    // Poll for new conversations every 5 seconds
-    const interval = setInterval(() => {
-      loadConversations();
-      loadUnreadCount();
-    }, 5000);
+    // Setup SignalR connection
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      console.log('🔄 Admin setting up SignalR connection...');
+      const connection = createSignalRConnection(token);
+      hubConnectionRef.current = connection;
+      
+      // Listen for new messages - MUST be set up BEFORE starting connection
+      connection.on('ReceiveMessage', (message: ChatMessage) => {
+        console.log('📨 Admin received message via SignalR:', message);
+        setMessages(prev => {
+          // Only add if not already in list
+          const exists = prev.some(m => m.id === message.id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
+        loadConversations(); // Refresh conversations to update last message
+        loadUnreadCount();
+        // Scroll to bottom
+        setTimeout(() => {
+          const event = new CustomEvent('scrollToBottom');
+          window.dispatchEvent(event);
+        }, 100);
+      });
+      
+      // Start connection AFTER setting up event handlers
+      startConnection(connection).catch(err => {
+        console.error('Admin failed to start SignalR connection:', err);
+      });
+    } else {
+      console.warn('⚠️ Admin: No token found, cannot connect to SignalR');
+    }
 
-    return () => clearInterval(interval);
+    return () => {
+      if (hubConnectionRef.current) {
+        console.log('🧹 Admin cleaning up SignalR connection');
+        hubConnectionRef.current.off('ReceiveMessage');
+        stopConnection(hubConnectionRef.current);
+        hubConnectionRef.current = null;
+      }
+    };
   }, []); // Remove selectedStudentId dependency
 
   // Separate effect for messages refresh when a conversation is selected
@@ -36,13 +71,6 @@ export default function AdminSupportChat() {
     if (!selectedStudentId) return;
 
     loadMessages(selectedStudentId);
-
-    // Poll for new messages every 5 seconds
-    const interval = setInterval(() => {
-      loadMessages(selectedStudentId);
-    }, 5000);
-
-    return () => clearInterval(interval);
   }, [selectedStudentId]); // Only re-run when selectedStudentId changes
 
   const loadConversations = async () => {
@@ -69,17 +97,7 @@ export default function AdminSupportChat() {
   const loadMessages = async (studentId: number) => {
     try {
       const data = await getMessagesByStudent(studentId);
-      const hadNewMessages = data.length > previousMessageCountRef.current;
       setMessages(data);
-      previousMessageCountRef.current = data.length;
-      
-      // Only trigger scroll if there are new messages
-      if (hadNewMessages) {
-        setTimeout(() => {
-          const event = new CustomEvent('scrollToBottom');
-          window.dispatchEvent(event);
-        }, 100);
-      }
     } catch (error) {
       console.error('Failed to load messages:', error);
       toast.error('Failed to load messages!');
@@ -91,7 +109,6 @@ export default function AdminSupportChat() {
   const handleSelectConversation = (studentId: number) => {
     setSelectedStudentId(studentId);
     setIsLoadingMessages(true); // Set loading when switching
-    previousMessageCountRef.current = 0; // Reset count when switching conversations
     // Don't call loadMessages here, let the useEffect handle it
   };
 
@@ -101,7 +118,11 @@ export default function AdminSupportChat() {
     try {
       const newMsg = await replyToStudent(selectedStudentId, { message: messageText });
       setMessages([...messages, newMsg]);
-      previousMessageCountRef.current = messages.length + 1; // Update count
+      // Scroll to bottom when admin sends message
+      setTimeout(() => {
+        const event = new CustomEvent('scrollToBottom');
+        window.dispatchEvent(event);
+      }, 100);
       toast.success('Message sent successfully!');
       // Update conversations in background without blocking
       loadConversations();

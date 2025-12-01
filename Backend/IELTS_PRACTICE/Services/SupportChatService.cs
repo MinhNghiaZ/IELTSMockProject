@@ -2,17 +2,23 @@ using IELTS_PRACTICE.Contexts;
 using IELTS_PRACTICE.DTOs.Requests;
 using IELTS_PRACTICE.DTOs.Responses;
 using IELTS_PRACTICE.Models;
+using IELTS_PRACTICE.Hubs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace IELTS_PRACTICE.Services
 {
     public class SupportChatService
     {
         private readonly AppDbContext _context;
+        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly ILogger<SupportChatService> _logger;
 
-        public SupportChatService(AppDbContext context)
+        public SupportChatService(AppDbContext context, IHubContext<ChatHub> hubContext, ILogger<SupportChatService> logger)
         {
             _context = context;
+            _hubContext = hubContext;
+            _logger = logger;
         }
 
         // Student sends a message
@@ -37,7 +43,7 @@ namespace IELTS_PRACTICE.Services
             _context.SupportChats.Add(message);
             await _context.SaveChangesAsync();
 
-            return new ChatMessageDTO
+            var result = new ChatMessageDTO
             {
                 Id = message.Id,
                 StudentId = message.StudentId,
@@ -49,6 +55,13 @@ namespace IELTS_PRACTICE.Services
                 CreatedAt = message.CreatedAt,
                 IsRead = message.IsRead
             };
+
+            // Notify all admins via SignalR
+            _logger.LogInformation($"📤 Sending message to Admins group via SignalR: MessageId={result.Id}, StudentId={studentId}");
+            await _hubContext.Clients.Group("Admins").SendAsync("ReceiveMessage", result);
+            _logger.LogInformation("✅ Message sent to Admins group");
+
+            return result;
         }
 
         // Admin sends a reply to a student
@@ -79,7 +92,7 @@ namespace IELTS_PRACTICE.Services
             _context.SupportChats.Add(message);
             await _context.SaveChangesAsync();
 
-            return new ChatMessageDTO
+            var result = new ChatMessageDTO
             {
                 Id = message.Id,
                 StudentId = message.StudentId,
@@ -91,6 +104,13 @@ namespace IELTS_PRACTICE.Services
                 CreatedAt = message.CreatedAt,
                 IsRead = message.IsRead
             };
+
+            // Notify specific student via SignalR
+            _logger.LogInformation($"📤 Sending message to User_{studentId} via SignalR: MessageId={result.Id}, AdminId={adminId}");
+            await _hubContext.Clients.Group($"User_{studentId}").SendAsync("ReceiveMessage", result);
+            _logger.LogInformation($"✅ Message sent to User_{studentId}");
+
+            return result;
         }
 
         // Get all conversations for admin (grouped by student)

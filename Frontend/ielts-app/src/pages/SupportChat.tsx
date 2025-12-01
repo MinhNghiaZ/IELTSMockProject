@@ -2,41 +2,65 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import ChatInterface from '../components/utils/ChatInterface';
 import { getMyMessages, sendMessage, getUnreadCount } from '../services/supportChatService';
+import { createSignalRConnection, startConnection, stopConnection } from '../services/signalRService';
 import type { ChatMessage } from '../services/supportChatService';
 
 export default function SupportChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const previousMessageCountRef = useRef(0);
+  const hubConnectionRef = useRef<any>(null);
 
   useEffect(() => {
     loadMessages();
     loadUnreadCount();
     
-    // Poll for new messages every 5 seconds
-    const interval = setInterval(() => {
-      loadMessages();
-      loadUnreadCount();
-    }, 5000);
+    // Setup SignalR connection
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      console.log('🔄 Setting up SignalR connection...');
+      const connection = createSignalRConnection(token);
+      hubConnectionRef.current = connection;
+      
+      // Listen for new messages - MUST be set up BEFORE starting connection
+      connection.on('ReceiveMessage', (message: ChatMessage) => {
+        console.log('📨 Received message via SignalR:', message);
+        setMessages(prev => {
+          // Avoid duplicates
+          const exists = prev.some(m => m.id === message.id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
+        loadUnreadCount();
+        // Scroll to bottom
+        setTimeout(() => {
+          const event = new CustomEvent('scrollToBottom');
+          window.dispatchEvent(event);
+        }, 100);
+      });
+      
+      // Start connection AFTER setting up event handlers
+      startConnection(connection).catch(err => {
+        console.error('Failed to start SignalR connection:', err);
+      });
+    } else {
+      console.warn('⚠️ No token found, cannot connect to SignalR');
+    }
 
-    return () => clearInterval(interval);
+    return () => {
+      if (hubConnectionRef.current) {
+        console.log('🧹 Cleaning up SignalR connection');
+        hubConnectionRef.current.off('ReceiveMessage');
+        stopConnection(hubConnectionRef.current);
+        hubConnectionRef.current = null;
+      }
+    };
   }, []);
 
   const loadMessages = async () => {
     try {
       const data = await getMyMessages();
-      const hadNewMessages = data.length > previousMessageCountRef.current;
       setMessages(data);
-      previousMessageCountRef.current = data.length;
-      
-      // Only trigger scroll if there are new messages
-      if (hadNewMessages) {
-        setTimeout(() => {
-          const event = new CustomEvent('scrollToBottom');
-          window.dispatchEvent(event);
-        }, 100);
-      }
     } catch (error) {
       console.error('Failed to load messages:', error);
     } finally {
@@ -57,6 +81,11 @@ export default function SupportChat() {
     try {
       const newMsg = await sendMessage({ message: messageText });
       setMessages([...messages, newMsg]);
+      // Scroll to bottom when user sends message
+      setTimeout(() => {
+        const event = new CustomEvent('scrollToBottom');
+        window.dispatchEvent(event);
+      }, 100);
       toast.success('Message sent successfully!');
     } catch (error) {
       console.error('Failed to send message:', error);

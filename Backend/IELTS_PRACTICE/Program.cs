@@ -1,5 +1,6 @@
 using IELTS_PRACTICE.Contexts;
 using IELTS_PRACTICE.Services;
+using IELTS_PRACTICE.Hubs;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -84,13 +85,17 @@ namespace IELTS_PRACTICE
             builder.Services.AddScoped<MediaService>();
             builder.Services.AddScoped<SupportChatService>();
 
-            // CORS for browser to call API
+            // Add SignalR
+            builder.Services.AddSignalR();
+
+            // CORS for browser to call API and SignalR
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
-                    policy.WithOrigins("http://localhost:5173")
+                    policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
                           .AllowAnyHeader()
-                          .AllowAnyMethod());
+                          .AllowAnyMethod()
+                          .AllowCredentials()); // Required for SignalR
             });
 
             //register authen/author
@@ -108,6 +113,23 @@ namespace IELTS_PRACTICE
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(
                             Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+                    };
+                    
+                    // Enable JWT authentication for SignalR
+                    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chathub"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -148,6 +170,9 @@ namespace IELTS_PRACTICE
             app.UseAuthorization();
 
             app.MapControllers();
+            
+            // Map SignalR hub
+            app.MapHub<ChatHub>("/chathub");
 
             app.Run();
         }
